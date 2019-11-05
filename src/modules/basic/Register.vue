@@ -130,7 +130,8 @@
 <script>
 import { required, email, sameAs } from "vuelidate/lib/validators";
 import AUTH from "services/auth";
-// import jquery from "jquery";
+var passwordHash = require('password-hash');
+import jquery from "jquery";
 export default {
   data() {
     return {
@@ -175,13 +176,31 @@ export default {
     onSubmit(evt) {
       evt.preventDefault();
       this.submitted = true;
+      var encryptPass = passwordHash.generate(this.mine.password);
 
       // stop here if form is invalid
       this.$v.$touch();
       if (this.$v.$invalid) {
         return;
       }
-      alert("SUCCESS!! :-)\n\n" + JSON.stringify(this.mine));
+      alert("SUCCESS!! :-)\n\n" + JSON.stringify(this.mine))
+
+      let link = `http://localhost:3000/db/create/${this.mine.fname}/${this.mine.email}/${encryptPass}`;
+      jquery
+        .ajax({
+          url: link,
+          method: "GET",
+          headers: {
+            "Access-Control-Allow-Origin": "*"
+          }
+        })
+        .then(response => {
+          alert(response.Username);
+        });
+
+      AUTH.register(this.mine.email, this.mine.password);
+    }
+
       // if (
       //   this.mine.email == "" ||
       //   this.mine.password == "" ||
@@ -196,23 +215,22 @@ export default {
       //   sessionStorage.setItem("Pass", this.mine.password);
       //   sessionStorage.setItem("fname", this.mine.fname);
       //   sessionStorage.setItem("lname", this.mine.lname);
-      //   AUTH.register(this.mine.email, this.mine.password);
+        
       // }
-    }
 
     // register() {
-    //   let link = `http://localhost:3000/db/create/${this.mine.fname}/${this.mine.email}/${this.mine.password}`;
-    //   jquery
-    //     .ajax({
-    //       url: link,
-    //       method: "GET",
-    //       headers: {
-    //         "Access-Control-Allow-Origin": "*"
-    //       }
-    //     })
-    //     .then(response => {
-    //       alert(response.username);
-    //     });
+      // let link = `http://localhost:3000/db/create/${this.mine.fname}/${this.mine.email}/${this.mine.password}`;
+      // jquery
+      //   .ajax({
+      //     url: link,
+      //     method: "GET",
+      //     headers: {
+      //       "Access-Control-Allow-Origin": "*"
+      //     }
+      //   })
+      //   .then(response => {
+      //     alert(response.username);
+      //   });
     // }
   }
 };
